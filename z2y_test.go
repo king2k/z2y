@@ -5,7 +5,7 @@
 package z2y_test
 
 import (
-	. "github.com/AllenDang/z2y"
+	. "github.com/king2k/z2y"
 	"testing"
 )
 

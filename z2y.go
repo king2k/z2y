@@ -5,7 +5,8 @@
 package z2y
 
 import (
-	"code.google.com/p/mahonia"
+	//"code.google.com/p/mahonia"
+	zhcn "code.google.com/p/go.text/encoding/simplifiedchinese"
 	"strings"
 )
 
@@ -18,8 +19,8 @@ import (
 // "1234890" -> "1234890"
 // "!@#$%^&*()~,.<>/?';:[]{}" -> "!@#$%^&*()~,.<>/?';:[]{}"
 func ConvertToPY(s string) string {
-	e := mahonia.NewEncoder("gbk")
-	str := e.ConvertString(s)
+	gbk, _ := encodeToGBK([]byte(s))
+	str := string(gbk)
 
 	mapfunc := func(r int32) rune {
 		switch {
@@ -86,14 +87,15 @@ func ConvertToPY(s string) string {
 			a := int32(str[i])*256 + int32(str[i+1]) - 65536
 
 			if r := mapfunc(a); a == r { // a is chinese punctuation
-				decoder := mahonia.NewDecoder("gbk")
-				decodedStr := decoder.ConvertString(str[i : i+2])
-				sReader := strings.NewReader(decodedStr)
+				utf8, _ := decodeToUTF8([]byte(str[i : i+2]))
+				utf8Str := string(utf8)
+				sReader := strings.NewReader(utf8Str)
 				ch, _, _ := sReader.ReadRune()
 				buf = append(buf, ch)
 			} else {
 				buf = append(buf, r)
 			}
+
 			i += 2
 		default:
 			buf = append(buf, rune(str[i]))
@@ -102,4 +104,22 @@ func ConvertToPY(s string) string {
 	}
 
 	return string(buf)
+}
+
+func encodeToGBK(utf8 []byte) ([]byte, error) {
+	dst := make([]byte, len(utf8))
+	n, _, err := zhcn.GBK.NewEncoder().Transform(dst, utf8, true)
+	if err != nil {
+		return nil, err
+	}
+	return dst[:n], nil
+}
+
+func decodeToUTF8(gbk []byte) ([]byte, error) {
+	dst := make([]byte, len(gbk)+2)
+	n, _, err := zhcn.GBK.NewDecoder().Transform(dst, gbk, true)
+	if err != nil {
+		return nil, err
+	}
+	return dst[:n], nil
 }
