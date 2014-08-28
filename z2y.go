@@ -6,7 +6,6 @@ package z2y
 
 import (
 	//"code.google.com/p/mahonia"
-	zhcn "code.google.com/p/go.text/encoding/simplifiedchinese"
 	"strings"
 )
 
@@ -104,22 +103,4 @@ func ConvertToPY(s string) string {
 	}
 
 	return string(buf)
-}
-
-func encodeToGBK(utf8 []byte) ([]byte, error) {
-	dst := make([]byte, len(utf8))
-	n, _, err := zhcn.GBK.NewEncoder().Transform(dst, utf8, true)
-	if err != nil {
-		return nil, err
-	}
-	return dst[:n], nil
-}
-
-func decodeToUTF8(gbk []byte) ([]byte, error) {
-	dst := make([]byte, len(gbk)+2)
-	n, _, err := zhcn.GBK.NewDecoder().Transform(dst, gbk, true)
-	if err != nil {
-		return nil, err
-	}
-	return dst[:n], nil
 }
